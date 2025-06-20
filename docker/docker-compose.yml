@@ -1,0 +1,56 @@
+services:
+
+#  messaging-service:
+#    depends_on:
+#      mongo:
+#        condition: service_healthy
+#      prometheus:
+#        condition: service_started
+#      grafana:
+#        condition: service_started
+#    image: "messaging-service"
+#    container_name: "messaging-service"
+#    ports:
+#      - "8080:8080"
+
+  # Database
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) }" | mongosh --host host.docker.internal --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+
+  # Observability
+
+  grafana:
+    image: grafana/grafana-oss:10.4.3
+    container_name: grafana
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=user
+      - GF_SECURITY_ADMIN_PASSWORD=password
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:v2.52.0
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+volumes:
+  mongo_data:
