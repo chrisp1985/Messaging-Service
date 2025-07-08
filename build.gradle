@@ -5,8 +5,55 @@ plugins {
 	id 'com.bmuschko.docker-spring-boot-application' version '9.4.0'
 }
 
-group = 'com.chrisp1985'
-version = '0.0.1-SNAPSHOT'
+allprojects {
+	group = 'com.chrisp1985'
+	version = '0.0.1-SNAPSHOT'
+
+	repositories {
+		mavenCentral()
+	}
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'com.bmuschko.docker-spring-boot-application'
+	dependencies {
+		// Spring Boot
+		implementation 'org.springframework.boot:spring-boot-starter-actuator'
+		implementation 'org.springframework.boot:spring-boot-starter-web'
+
+		// Spring Cloud AWS (v3 - correct version)
+		implementation platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.1.0")
+		implementation "io.awspring.cloud:spring-cloud-aws-starter-sqs"
+		implementation "io.awspring.cloud:spring-cloud-aws-starter-s3"
+
+		// AWS SDK (optional - only if you use features not in awspring-cloud)
+		implementation 'software.amazon.awssdk:sqs:2.31.67'
+		implementation 'software.amazon.awssdk:s3:2.31.66'
+
+		// Other
+		implementation 'commons-io:commons-io:2.19.0'
+		implementation 'org.projectlombok:lombok:1.18.30'
+		annotationProcessor 'org.projectlombok:lombok:1.18.30'
+		implementation 'com.fasterxml.jackson.core:jackson-databind'
+		runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+		implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+		annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+		// Test
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		testImplementation 'org.springframework.boot:spring-boot-testcontainers'
+		testImplementation 'io.projectreactor:reactor-test'
+		testImplementation 'org.testcontainers:junit-jupiter'
+		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	}
+
+	tasks.named('test') {
+		useJUnitPlatform()
+	}
+}
 
 java {
 	toolchain {

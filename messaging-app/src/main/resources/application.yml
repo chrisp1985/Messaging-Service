@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: messaging
@@ -20,8 +23,12 @@ spring:
         documentdb:
           name: generated-docs-documentdb-queue
       s3:
-        bucket-arn: arn:aws:s3:::generated-docs-demo-bucket
-        name: generated-docs-demo-bucket
+        output:
+          bucket-arn: arn:aws:s3:::generated-docs-demo-bucket
+          name: generated-docs-demo-bucket
+        input:
+          bucket-arn: arn:aws:s3:::generated-docs-template-bucket
+          name: generated-docs-template-bucket
 
 management:
   endpoints:

@@ -1,0 +1,29 @@
+group = 'com.chrisp1985'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+    // Test
+    testImplementation 'org.testcontainers:mongodb'
+}
+
+docker {
+    springBootApplication {
+        baseImage = 'openjdk:17.0.1-jdk-slim'
+
+        images = ["$build_image_name:latest"]
+        jvmArgs = ['-Dspring.profiles.active=prod', '-Xmx2048m']
+    }
+}

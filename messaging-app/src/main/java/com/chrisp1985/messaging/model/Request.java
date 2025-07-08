@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +20,6 @@ public class Request {
     private Status status = Status.PENDING;
     private Integer customerId;
     private Integer templateId;
-    private DocumentData documentData;
+    private Map<String, Object> documentData;
 
 }
