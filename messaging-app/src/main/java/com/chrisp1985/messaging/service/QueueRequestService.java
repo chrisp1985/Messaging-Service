@@ -1,7 +1,6 @@
 package com.chrisp1985.messaging.service;
 
 import com.chrisp1985.messaging.model.sqs.DocumentChangeEventDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import io.awspring.cloud.sqs.operations.SqsTemplate;
@@ -44,7 +43,7 @@ public class QueueRequestService {
                     objectId,
                     fullDoc.getString("status"),
                     fullDoc.getInteger("customerId"),
-                    fullDoc.getInteger("templateId"),
+                    fullDoc.getString("templateLink"),
                     fullDoc.get("documentData", Map.class)
             );
 

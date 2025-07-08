@@ -36,7 +36,7 @@ public class BlobStorageService {
         log.info("Document added to S3 at {}/{}!", objectId, file.getName());
     }
 
-    public void addDocument(String objectId, String filename, byte[] fileBytes) {
+    public void addDocument(String objectId, String filename, File file) {
         String key = objectId + "/" + filename;
 
         PutObjectRequest putRequest = PutObjectRequest.builder()
@@ -45,7 +45,7 @@ public class BlobStorageService {
                 .contentType("application/pdf")
                 .build();
 
-        s3Client.putObject(putRequest, RequestBody.fromBytes(fileBytes));
+        s3Client.putObject(putRequest, RequestBody.fromFile(file));
 
         log.info("PDF added to S3 at {}/{}!", objectId, filename);
     }

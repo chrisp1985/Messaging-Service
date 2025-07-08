@@ -14,7 +14,7 @@ public class DocumentChangeEventDTO {
     private String objectId;
     private String status;
     private int customerId;
-    private int templateId;
+    private String templateLink;
     private Map<String, Object> documentData;
 }
 

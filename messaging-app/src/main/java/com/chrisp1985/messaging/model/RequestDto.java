@@ -9,6 +9,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class RequestDto {
     Integer customerId;
-    Integer templateId;
+    String templateLink;
     Map<String, Object> documentData;
 }

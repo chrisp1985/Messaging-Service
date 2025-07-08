@@ -27,6 +27,7 @@ public class MessageQueueListener {
 
     @SqsListener(value = "${spring.cloud.aws.sqs.documentdb.name}")
     public void handleDocDbEvent(String messageJson) {
+        String s3Key = "";
         try {
             DocumentChangeEvent event = objectMapper.readValue(messageJson, DocumentChangeEvent.class);
 
@@ -36,11 +37,13 @@ public class MessageQueueListener {
 
             log.info("Extracted documentData: {}", documentData);
 
-            byte[] convertedFile = documentConversionService.processTemplateFromS3(customerId + "/" + objectId, documentData);
-            blobStorageService.addDocument(String.valueOf(customerId), objectId, convertedFile);
+            s3Key = customerId + "/" + objectId;
+
+            File convertedFile = documentConversionService.processTemplateFromS3(s3Key);
+            blobStorageService.addDocument(String.valueOf(customerId), convertedFile);
 
         } catch (Exception e) {
-            log.error("Failed to parse incoming message", e);
+            log.error("Failed to parse incoming message with key: {}", s3Key, e);
         }
     }
 

@@ -19,7 +19,7 @@ public class Request {
 
     private Status status = Status.PENDING;
     private Integer customerId;
-    private Integer templateId;
+    private String templateLink;
     private Map<String, Object> documentData;
 
 }

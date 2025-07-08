@@ -17,84 +17,37 @@ import java.util.Map;
 @Service
 public class DocumentConversionService {
 
-    private final S3Client s3Client;
+    public File processTemplateFromS3(String s3Key) {
+        File file = new File(s3Key + ".pdf");
 
-    @Value("${spring.cloud.aws.s3.generated.name}")
-    private String templateBucketName;
+        log.info("Processing document: {}", s3Key);
 
-    public DocumentConversionService(S3Client s3Client) {
-        this.s3Client = s3Client;
-    }
+        for(int i = 0; i < 10; i++) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-    public byte[] processTemplateFromS3(String s3Key, Map<String, Object> data) {
-        GetObjectRequest getRequest = GetObjectRequest.builder()
-                .bucket(templateBucketName)
-                .key(s3Key)
-                .build();
+        log.info("Processed document successfully");
 
-        try (InputStream s3Stream = s3Client.getObject(getRequest);
-             XWPFDocument document = new XWPFDocument(s3Stream);
-             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+        try {
+            // Ensure parent directories exist
+            File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs(); // create missing directories
+            }
 
-            replacePlaceholders(document, data);
-            document.write(outputStream);
-            return convertDocxBytesToPdf(outputStream.toByteArray());
-
+            if (file.createNewFile()) {
+                System.out.println("File created: " + file.getAbsolutePath());
+            } else {
+                System.out.println("File already exists.");
+            }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to process document", e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+
+        return file;
     }
-
-    private void replacePlaceholders(XWPFDocument document, Map<String, Object> data) {
-        // Replace in paragraphs
-        for (XWPFParagraph paragraph : document.getParagraphs()) {
-            replaceInParagraph(paragraph, data);
-        }
-
-        // Replace in tables
-        for (XWPFTable table : document.getTables()) {
-            for (XWPFTableRow row : table.getRows()) {
-                for (XWPFTableCell cell : row.getTableCells()) {
-                    for (XWPFParagraph paragraph : cell.getParagraphs()) {
-                        replaceInParagraph(paragraph, data);
-                    }
-                }
-            }
-        }
-    }
-
-    private void replaceInParagraph(XWPFParagraph paragraph, Map<String, Object> data) {
-        for (XWPFRun run : paragraph.getRuns()) {
-            String text = run.getText(0);
-            if (text != null) {
-                for (Map.Entry<String, Object> entry : data.entrySet()) {
-                    String placeholder = "{{" + entry.getKey() + "}}";
-                    if (text.contains(placeholder)) {
-                        text = text.replace(placeholder, String.valueOf(entry.getValue()));
-                    }
-                }
-                run.setText(text, 0);
-            }
-        }
-    }
-
-    private byte[] convertDocxBytesToPdf(byte[] docxBytes) throws Exception {
-        try (InputStream docxInputStream = new ByteArrayInputStream(docxBytes);
-             ByteArrayOutputStream pdfOut = new ByteArrayOutputStream()) {
-
-            WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(docxInputStream);
-
-            // Set PDF conversion settings
-            FOSettings foSettings = Docx4J.createFOSettings();
-            foSettings.setWmlPackage(wordMLPackage);
-
-            // Use docx4j to convert to PDF
-            Docx4J.toFO(foSettings, pdfOut, Docx4J.FLAG_EXPORT_PREFER_XSL);
-
-            return pdfOut.toByteArray();
-        }
-    }
-
 }
